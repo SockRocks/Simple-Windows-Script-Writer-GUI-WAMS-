@@ -1,0 +1,74 @@
+#title{
+            color:lightgreen;
+            text-align:center;
+            
+        }
+        
+        body{
+            background-color:darkgreen;
+            font-family:cursive;
+            color:lightgreen;
+        }
+        
+        
+        body>h2{
+            color:lightgreen;
+        }
+        
+        
+        body li{
+            color:lightgreen;
+        }
+        
+        
+        body p{
+            color:lightgreen;
+        }
+        
+        
+        #Manual{
+            position:relative;
+            text-align:center;
+            top:100px;
+        }
+        
+        
+        #intro{
+            border-style:dashed;
+            border-color:green;
+        }
+        
+        
+        .important{
+            font-weight:bold;
+        }
+        
+        
+        body h3{
+            color:lightgreen;
+            padding-left:10px;
+        }
+        
+        
+        #f1{
+            position:relative;
+            top:10px;
+        }
+        
+        
+        p.manual{
+            padding-left:15px;
+        }
+        
+
+        .mancont{
+            position:relative;
+            top:100px;
+            border-style:solid;
+            border-color:green;
+        }
+        
+        
+        h4.manual{
+            padding-left:15px;
+        }
