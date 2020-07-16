@@ -38,7 +38,7 @@ except:
 
 main.maxsize(100,124)
 main.configure(background='darkgreen')
-title = Label(main, text='WAMS\n 5.19.11.7', font='Arial 20 bold', fg='lightgreen', bg='darkgreen')
+title = Label(main, text='WAMS\n 5.1.1.2', font='Arial 20 bold', fg='lightgreen', bg='darkgreen')
 title.pack(side=TOP)
 batch = Button(main, text='File Maker', fg='darkgreen', command=mainbatch)
 batch.pack(fill=X)

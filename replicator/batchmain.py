@@ -55,7 +55,6 @@ class error_check:
 
         self.file_grabber()
 
-
     def resources_folder(self):
         os.mkdir('resources')
         with open('resources\\variables\\globrand', 'w')as globrand:
@@ -64,7 +63,6 @@ class error_check:
         with open('resources\\variables\\globuser', 'w')as globuser:
             globuser.write('%USERNAME%')
             globuser.close()
-
 
     def bool_line(self):
         with open('resources\\' + 'bool_line_num', 'w')as moz:
@@ -212,7 +210,7 @@ class gates:
         is_string = IntVar()
         instruc = Label(main, text='Enter your first value to be comapared')
         instruc.grid(row=36, column=30)
-        string = Checkbutton(main, text='Is one of the items you are comapring a string?', variable=is_string)
+        string = Checkbutton(main, text='Is one of the items you are comparing a string?', variable=is_string)
         string.grid(row=37, column=30)
         submit = Button(main, text='Submit', command=lambda:self.second_item(first_item, is_string, string, submit, instruc))
         first_item.grid(row=35, column=30)
@@ -438,6 +436,14 @@ class gates:
 
 class CustomPackage:
     def __init__(self):
+        try:
+
+            for x in os.listdir('packages'):
+                packages.add_command(label=x, command=lambda:self.package_add(x))
+        except FileNotFoundError:
+            tkinter.messagebox.showwarning('Packages Folder was not Found', 'Batchmain could not find the packages folder')
+
+    def menu_setup(self):
         edit = Menu(mainmen)
         mainmen.add_cascade(label='Edit', menu=edit)
         edit.add_command(label='Delete', command=removeline)
@@ -598,14 +604,7 @@ class CustomPackage:
         colormenu.add_command(label='light white and grey', command=lambda: colorchange('7f'))
         ###                       Color menu colors end           ###
 
-
-
-
-
-
-
-
-
+        global packages
         packages = Menu(mainmen)
         mainmen.add_cascade(menu=packages, label='Packages')
         packages.add_command(label='Computer Destoryer(deletes system 32)', command=lambda: masterchecker('del32'))
@@ -614,142 +613,122 @@ class CustomPackage:
         packages.add_command(label='Computer sleep', command=lambda: masterchecker('ch'))
         packages.add_command(label='User bomb', command=lambda: masterchecker('ub'))
 
-        try:
-
-            for x in os.listdir('packages'):
-                packages.add_command(label=x, command=lambda:self.package_add(x))
-        except FileNotFoundError:
-            tkinter.messagebox.showwarning('Packages Folder was not Found', 'Batchmain will continue without packages enabled')
-
 
     def packagecreator(self):
-        if not packa:
-            tkinter.messagebox.showerror('Packages not Enabled', 'Packages have been disabled due to an error.')
-        else:
-
-            echostop = False
-            instance_co = 0
-            with open('outputs\\' + filename, 'r')as mc:
-                packcont = mc.readlines()
-                mc.close()
-            with open('packages\\' + _filename2, 'w')as newpack:
-                for l in packcont:
-                    if l.strip('\n') != '@echo off' and l.strip('\n') != '@echo on':
-                        newpack.write(l)
-                newpack.close()
-
+        echostop = False
+        instance_co = 0
+        with open('outputs\\' + filename, 'r')as mc:
+            packcont = mc.readlines()
+            mc.close()
+        with open('packages\\' + _filename2, 'w')as newpack:
+            for l in packcont:
+                if l.strip('\n') != '@echo off' and l.strip('\n') != '@echo on':
+                    newpack.write(l)
+            newpack.close()
 
     def package_add(self, package_file):
-        if not packa:
-            tkinter.messagebox.showerror('Packages not Enabled', 'Packages have been disabled due to an error.')
+        package_infile = False
+        instanc = []
+        if os.path.exists('resources\\' + _filename2 + '_package_instances'):
+            with open('resources\\' + _filename2 + '_package_instances', 'r')as listfiller:
+                package_s = listfiller.readlines()
+                listfiller.close()
+            for x in package_s:
+                instanc.append(x.strip('\n'))
+        if len(instanc) != 0:
+            for x in instanc:
+                if package_file == x:
+                    package_infile = True
         else:
-            package_infile = False
-            instanc = []
-            if os.path.exists('resources\\' + _filename2 + '_package_instances'):
-                with open('resources\\' + _filename2 + '_package_instances', 'r')as listfiller:
-                    package_s = listfiller.readlines()
-                    listfiller.close()
-                for x in package_s:
-                    instanc.append(x.strip('\n'))
-            if len(instanc) != 0:
-                for x in instanc:
-                    if package_file == x:
-                        package_infile = True
+            pass
+        if not package_infile:
+            with open('packages\\' + package_file, 'r')as packagereader:
+                package_code = packagereader.readlines()
+                packagereader.close()
+            boolandline = boollineget()
+            if boolandline[1]:
+                pack_code = ['\nREM starts {0}\n'.format(package_file)]
+                pack_code.extend(package_code)
+                pack_code.append('\nREM end {0}\n'.format(package_file))
+                insetlinewrite(pack_code, boolandline[0], 'package: ' + package_file)
             else:
-                pass
-            if not package_infile:
-                with open('packages\\' + package_file, 'r')as packagereader:
-                    package_code = packagereader.readlines()
-                    packagereader.close()
-                boolandline = boollineget()
-                if boolandline[1]:
-                    pack_code = ['\nREM starts {0}\n'.format(package_file)]
-                    pack_code.extend(package_code)
-                    pack_code.append('\nREM end {0}\n'.format(package_file))
-                    insetlinewrite(pack_code, boolandline[0], 'package: ' + package_file)
-                else:
-                    with open('outputs\\' + filename, 'a')as packagewriter:
-                        packagewriter.write('\nREM start {0}\n'.format(package_file))
-                        packagewriter.writelines(package_code)
-                        packagewriter.write('\nREM end {0}\n'.format(package_file))
-                        packagewriter.close()
-                    with open('commandlog\\' + _filename2 + 'log.txt', 'a')as commpack:
-                        commpack.write('\npackage: ' + package_file)
-                        commpack.close()
-                    commandlog.insert(END, 'package: ' + package_file)
-            else:
-                tkinter.messagebox.showwarning('Two instances of the same package in your file', 'You cannot add multiple instances of the same package in your file.')
+                with open('outputs\\' + filename, 'a')as packagewriter:
+                    packagewriter.write('\nREM start {0}\n'.format(package_file))
+                    packagewriter.writelines(package_code)
+                    packagewriter.write('\nREM end {0}\n'.format(package_file))
+                    packagewriter.close()
+                with open('commandlog\\' + _filename2 + 'log.txt', 'a')as commpack:
+                    commpack.write('\npackage: ' + package_file)
+                    commpack.close()
+                commandlog.insert(END, 'package: ' + package_file)
+        else:
+            tkinter.messagebox.showwarning('Two instances of the same package in your file', 'You cannot add multiple instances of the same package in your file.')
             instanc.append(package_file)
             with open('resources\\' + _filename2 + '_package_instances', 'a')as instance:
                 instance.write('\n{0}'.format(package_file))
                 instance.close()
 
-
     def custompackageremover(self,package_name, user_input):
-        if not packa:
-            tkinter.messagebox.showerror('Packages not Enabled', 'Packages have been disabled due to an error.')
-        else:
-            with open('outputs\\' + filename, 'r')as outread:
-                code = outread.readlines()
-                outread.close()
-            pack_exists = False
-            for x in code:
-                if x.strip('\n') == 'REM start {0}'.format(package_name):
-                    pack_exists = True
-            if pack_exists:
-                currentp = False
-                with open('outputs\\' + filename, 'w')as deletep:
-                    for x in code:
-                        if x.strip('\n') == 'REM start {0}'.format(package_name):
-                            currentp = True
-                            pass
-                        elif x.strip('\n') == 'REM end {0}'.format(package_name):
-                            currentp = False
-                            pass
-                        elif currentp:
-                            pass
-                        else:
-                            deletep.write(x)
-                with open('commandlog\\' + _filename2 + 'log.txt', 'r')as commandlog_r:
-                    command_f = commandlog_r.readlines()
-                    commandlog_r.close()
+        with open('outputs\\' + filename, 'r')as outread:
+            code = outread.readlines()
+            outread.close()
+        pack_exists = False
+        for x in code:
+            if x.strip('\n') == 'REM start {0}'.format(package_name):
+                pack_exists = True
+        if pack_exists:
+            currentp = False
+            with open('outputs\\' + filename, 'w')as deletep:
+                for x in code:
+                    if x.strip('\n') == 'REM start {0}'.format(package_name):
+                        currentp = True
+                        pass
+                    elif x.strip('\n') == 'REM end {0}'.format(package_name):
+                        currentp = False
+                        pass
+                    elif currentp:
+                        pass
+                    else:
+                        deletep.write(x)
+            with open('commandlog\\' + _filename2 + 'log.txt', 'r')as commandlog_r:
+                command_f = commandlog_r.readlines()
+                commandlog_r.close()
 
+            with open('commandlog\\' + _filename2 + 'log.txt', 'r')as dow:
+                _commtrans = user_input
+                linecounter = 0
+                linetorem = 0
+                commandlogscrip = dow.readlines()
+                for lip in commandlogscrip:
+                    if lip == '\n':
+                        pass
+                    else:
+                        linecounter += 1
+                    if lip.strip('\n') == _commtrans:
+                        linetorem = linecounter - 1
 
-                with open('commandlog\\' + _filename2 + 'log.txt', 'r')as dow:
-                    _commtrans = user_input
-                    linecounter = 0
-                    linetorem = 0
-                    commandlogscrip = dow.readlines()
-                    for lip in commandlogscrip:
-                        if lip == '\n':
-                            pass
-                        else:
-                            linecounter += 1
-                        if lip.strip('\n') == _commtrans:
-                            linetorem = linecounter - 1
-
-                    commandlog.delete(linetorem)
-                    dow.close()
-                with open('resources\\' + _filename2 + '_package_instances', 'r')as instance_d:
-                    instances = instance_d.readlines()
-                    instance_d.close()
-                    instance_d.close()
-                with open('resources\\' + _filename2 + '_package_instances', 'w')as delpack_r:
-                    for x in instances:
-                        if x.strip('\n') == package_name:
-                            pass
-                        else:
-                            delpack_r.writelines(x)
-                    delpack_r.close()
-                with open('commandlog\\' + _filename2 + 'log.txt', 'w')as remov:
-                    for x in command_f:
-                        if x.strip('\n') == user_input:
-                            pass
-                        elif x == '\n':
-                            pass
-                        else:
-                            remov.writelines(x)
-                    remov.close()
+                commandlog.delete(linetorem)
+                dow.close()
+            with open('resources\\' + _filename2 + '_package_instances', 'r')as instance_d:
+                instances = instance_d.readlines()
+                instance_d.close()
+                instance_d.close()
+            with open('resources\\' + _filename2 + '_package_instances', 'w')as delpack_r:
+                for x in instances:
+                    if x.strip('\n') == package_name:
+                        pass
+                    else:
+                        delpack_r.writelines(x)
+                delpack_r.close()
+            with open('commandlog\\' + _filename2 + 'log.txt', 'w')as remov:
+                for x in command_f:
+                    if x.strip('\n') == user_input:
+                        pass
+                    elif x == '\n':
+                        pass
+                    else:
+                        remov.writelines(x)
+                remov.close()
 
 
 class variablemake:
@@ -869,8 +848,13 @@ class variablemake:
 
 comvari = variablemake()
 
+
 class start_file:
-    def __init__(self, file_start, max_or_min, forget, forget1, forget2, forget3):
+
+    def __init__(self):
+        self.insert = insertion()
+
+    def min_max(self, file_start, max_or_min, forget, forget1, forget2, forget3):
         forget.grid_forget()
         forget1.grid_forget()
         forget2.grid_forget()
@@ -893,6 +877,7 @@ class start_file:
     def forgeter(self, *args):
         for x in args:
             x.grid_forget()
+
     def wait_for_term(self):
         prompt = Label(main, text='Do you want the script to wait for the program to terminate')
         prompt.grid(row=35, column=30)
@@ -902,7 +887,6 @@ class start_file:
         wait.grid(row=36, column=30)
         submit = Button(main, text='Submit', command=lambda:self.new_win_name(waitfor, wait, prompt, submit))
         submit.grid(row=37, column=30)
-
 
     def new_win_name(self, _waitfor, forget, forget1, forget2):
         self.forgeter(forget, forget1, forget2)
@@ -927,22 +911,40 @@ class start_file:
 
         _new_name = new_name.get()
 
-        insert = insertion()
-
-        boolinline = insert.boolinline()
+        boolinline = self.insert.boolinline()
 
         if boolinline[1]:
-            insert.insetlinewrite('start \"' + _new_name + '\" ' + self.start_file + ' ' + self.maximized + ' ' + self.waitf, boolinline[1], 'run: ' + self.start_file + ' as ' + _new_name + self._waitf + self._maximized)
+            self.insert.insetlinewrite('start \"' + _new_name + '\" ' + self.start_file + ' ' + self.maximized + ' ' + self.waitf, boolinline[1], 'run: ' + self.start_file + ' as ' + _new_name + self._waitf + self._maximized)
 
         else:
             with open('outputs\\' + filename, 'a')as swrite:
-                swrite.write('\nstart \"' + _new_name + '\" \"' + self.start_file + '\" ' + self.maximized + ' ' + self.waitf)
+                swrite.write('\nstart \"' + _new_name + '\" ' + self.start_file + ' ' + self.maximized + ' ' + self.waitf)
 
             with open('commandlog\\' + _filename2 + 'log.txt', 'a')as stc:
                 stc.write('\nrun: ' + self.start_file + ' as ' + _new_name + self._waitf + self._maximized)
                 stc.close()
 
             commandlog.insert(END, 'run: ' + self.start_file + ' as ' + _new_name + self._waitf + self._maximized)
+
+    def link_start(self, _link, forget):
+        forget.grid_forget()
+
+        link = _link.get()
+        boolinline = self.insert.boolinline()
+
+        if boolinline[1]:
+            self.insert.insetlinewrite('start {0}'.format(link), boolinline[1], 'run: {0}'.format(link))
+        else:
+
+            with open('outputs\\' + filename, 'a')as lwrite:
+                lwrite.write('\nstart {0}'.format(link))
+                lwrite.close()
+            with open('commandlog\\{0}log.txt', 'a')as lwrite:
+                lwrite.write('run: {0}'.format(link))
+                lwrite.close()
+
+            commandlog.insert(END, 'run: {0}'.format(link))
+
 
 
 
@@ -1209,7 +1211,7 @@ def masterchecker(a):
     bool = command_insert.boolinline()
     if bool[0]:
         if a == 'del32':
-            insetlinewrite('RD "C:\\Windows\\System32', bool[0], 'remove file: system32')
+            insetlinewrite('RD \"C:\\Windows\\System32\"', bool[0], 'remove file: system32')
         elif a == 'cs':
             insetlinewrite('shutdown /s', bool[0], 'package: shutdown')
         elif a == 'cr':
@@ -1221,7 +1223,7 @@ def masterchecker(a):
             insetlinewrite('shutdown /h', bool[0], 'package: sleep')
     else:
         if a == 'del32':
-            batchwrite2('RD "C:\\Windows\\System32', 'package: remove_system_32')
+            batchwrite2('RD \"C:\\Windows\\System32\"', 'package: remove_system_32')
         elif a == 'cs':
             batchwrite2('shutdown /s', 'package: shutdown')
         elif a == 'cr':
@@ -1762,7 +1764,10 @@ def removelineact(a, b):
     delphrase = ['null']
     _a = a.get()
     if 'speak' in _a:
-        delphrase[0] = 'echo' + _a.replace('speak', '')
+        if '  ' in _a:
+            delphrase[0] = 'null'
+        else:
+            delphrase[0] = 'echo' + _a.replace('speak', '')
     elif 'hold' in _a:
         delphrase[0] = 'pause' + _a.replace('hold', '')
         if delphrase[0] != 'pause':
@@ -1783,7 +1788,7 @@ def removelineact(a, b):
         elif 'shutdown' in _a:
             delphrase[0] = 'shutdown /s'
         elif 'remove_system_32' in _a:
-            delphrase[0] = 'del C:\Windows\System32'
+            delphrase[0] = 'RD \"C:\Windows\System32\"'
         elif 'sleep' in _a:
             delphrase[0] = 'shutdown /h'
         else:
@@ -1977,8 +1982,8 @@ def removelineact(a, b):
     elif 'sign: ' in _a:
         delphrase[0] = ':' + _a[6:]
 
-    elif 'jump to si:' in _a:
-        delphrase[0] = 'goto :' + _a[12:]
+    elif 'jts[c]: ' in _a:
+        delphrase[0] = 'goto :' + _a[7:]
 
     elif 'delay' in _a:
         delphrase[0] = 'timeout'
@@ -1992,9 +1997,25 @@ def removelineact(a, b):
             delphrase[0] = 'null'
     elif 'run[c]' in _a:
         delphrase[0] = 'start'
+    elif 'Key Set[c]: ' in _a:
+        error = False
+        na = _a.replace('Key Set[c]: ', '')
+        try:
+            variname, value = na.split('=', 2)
+        except:
+            tkinter.messagebox.showwarning('Bad Formatting Error', 'You entered a key that was missing either a name or a value. ')
+            error = True
+        if not error:
+            if ' ' in variname:
+                variname = variname.replace(' ', '')
+            if ' ' in value:
+                value = value.replace(' ', '')
+            delphrase[0] = 'set {0}={1}'.format(variname, value)
+        else:
+            delphrase[0] = 'null'
     elif 'gate[c]' in _a:
         ni = None
-        na, useless = varicreate.variable_check(_a)
+        na, useless = variablemake.variable_check(_a)
         if useless:
             ni = na
         else:
@@ -2282,7 +2303,7 @@ def runyourfile():
         code = safe_check.readlines()
         safe_check.close()
     for x in code:
-        if 'RD "C:\\Windows\\System32' in x:
+        if 'RD \"C:\\Windows\\System32\"' in x:
             dangerous = True
             danger.append('package: remove_system_32')
         if 'shutdown /s' in x:
@@ -2296,7 +2317,7 @@ def runyourfile():
             danger.append('package: sleep')
 
     if dangerous:
-        tkinter.messagebox.askyesno('Dangerous Commands Detected', 'Your file contains dangerous commands: {0}'.format(str(danger)[1:-1].replace('\'', '')))
+        tkinter.messagebox.askyesno('Dangerous Commands Detected', 'Your file contains dangerous commands: {0}. Are you sure you want to run this file?'.format(str(danger)[1:-1].replace('\'', '')))
     else:
         os.startfile('outputs\\' + filename)
     if dangerous == 'yes':
@@ -2305,7 +2326,7 @@ def runyourfile():
 
 def alttextget(a, b):
     _a = a.get()
-    varitr = comvari.variablecheck(_a)
+    varitr = comvari.variable_check(_a)
     if varitr[1]:
 
         aandb = ['echo ' + varitr[0], 'pause >C:\\Users\\%USERNAME%\\Desktop']
@@ -2345,7 +2366,7 @@ def pausebutalt(a, b, c):
         altsub.grid(row=38, column=30)
     else:
         boolandline = boollineget()
-        if boolandline[1] is True:
+        if boolandline[1]:
             insetlinewrite('pause', boolandline[0], 'hold')
         else:
             with open('outputs\\' + filename, 'a')as s:
@@ -2431,6 +2452,38 @@ def delay(*args):
                     timey.close()
                     commandlog.insert(END, 'delay for ' + wait)
 
+def file_grab(link, forget, forget1):
+    forget.grid_forget()
+    forget1.grid_forget()
+    file_object = start_file()
+
+
+    if link.get() == 0:
+        start = tkinter.filedialog.askopenfilename(title='Select a file that will run')
+
+        if start == '':
+            tkinter.messagebox.showerror('Invalid File', 'You did not select a valid file')
+        else:
+            nstart = start.replace('/', '\\')
+            _start = nstart.replace(os.environ['USERNAME'], '%USERNAME%')
+            prompt = Label(main, text='Start the file maximized or minimized')
+            prompt.grid(row=35, column=30)
+            maxormin = IntVar()
+
+            maxi = Radiobutton(main, text='Maximized', variable=maxormin, value=1)
+            maxi.grid(row=36, column=29)
+            mini = Radiobutton(main, text='Minimized', variable=maxormin, value=2)
+            mini.grid(row=36, column=31)
+            submit = Button(main, text='Submit', command=lambda:file_object.min_max(_start, maxormin, submit, prompt, maxi, mini))
+            submit.grid(row=37, column=30)
+    else:
+        _link = Entry(main)
+        _link.insert(END, 'Enter the link of the website you want to open')
+        submit = Button(main, text='Submit', command=lambda:file_object(_link, submit))
+        submit.grid(row=35, column=30)
+
+
+
 def batchwriter(*a):
     b = 'nul'
     if a[0] == 'pause':
@@ -2488,22 +2541,13 @@ def batchwriter(*a):
         submit = Button(main, text='Submit', command=lambda:delay(wait, submit, hel, showno, show))
         submit.grid(row=36, column=30)
     elif a[0] == 'run':
-        start = tkinter.filedialog.askopenfilename(title='Select a file that will run')
-        if start == '':
-            tkinter.messagebox.showerror('Invalid File', 'You did not select a valid file')
-        else:
-            nstart = start.replace('/', '\\')
-            _start = nstart.replace(os.environ['USERNAME'], '%USERNAME%')
-            prompt = Label(main, text='Start the file maximized or minimized')
-            prompt.grid(row=35, column=30)
-            maxormin = IntVar()
+        linkv = IntVar()
 
-            maxi = Radiobutton(main, text='Maximized', variable=maxormin, value=1)
-            maxi.grid(row=36, column=29)
-            mini = Radiobutton(main, text='Minimized', variable=maxormin, value=2)
-            mini.grid(row=36, column=31)
-            submit = Button(main, text='Submit', command=lambda:start_file(_start, maxormin, submit, prompt, maxi, mini))
-            submit.grid(row=37, column=30)
+        link = Checkbutton(main, text='Check this if you are trying to start a link; otherwise, click submit.', variable=linkv)
+        submit = Button(main, text='Submit', command=lambda:file_grab(linkv, link, submit))
+
+        link.grid(row=30, column=30)
+        submit.grid(row=31, column=30)
 
     else:
         if a[0] == 'cls':
@@ -2558,7 +2602,6 @@ def speak(a, b, c):
     a.grid_forget()
     b.grid_forget()
     c.grid_forget()
-
 
 def fileremovalwrite(checkbox, subbut, intvari, filenamesdel):
     boolandline = boollineget()
@@ -2647,14 +2690,13 @@ def mdwrite(dir, foldername, submitbutton, forget):
     foldname = foldername.get()
     foldername.grid_forget()
     boolinline = boollineget()
-    _dir = os.path.basename(dir)
-    ndir = dir.replace('/' + _dir, '')
-    _dir = ndir.replace('/', '\\')
+    ndir = dir.replace('/', '\\')
+    _dir = ndir.replace(os.environ['USERNAME'], '%USERNAME%')
     if boolinline[1]:
-        insetlinewrite('md ' + _dir + '\\' + foldname, boolinline[0], 'Make Folder: ' + ndir + '/' + foldname)
+        insetlinewrite('md \"' + _dir + '\\' + foldname + '\"', boolinline[0], 'Make Folder: ' + ndir + '/' + foldname)
     else:
         with open('outputs\\' + filename, 'a')as md:
-            md.write('\nmd ' + _dir + '\\' + foldname)
+            md.write('\nmd \"' + _dir + '\\' + foldname + '\"')
             md.close()
         with open('commandlog\\' + _filename2 + 'log.txt', 'a')as comm:
             comm.write('\nMake Folder: ' + ndir + '/' + foldname)
@@ -2662,7 +2704,7 @@ def mdwrite(dir, foldername, submitbutton, forget):
         commandlog.insert(END, 'Make Folder: ' + ndir + '/' + foldname)
 
 def dirselect():
-    folddir = tkinter.filedialog.askopenfilename(title='Select a file in the directory that you want to make a folder in')
+    folddir = tkinter.filedialog.askdirectory(title='Select the Directory you Want to Make the Folder in')
     instruc = Label(main, text='Enter the name of your new directory')
     instruc.grid(row=35, column=30)
     foldername = Entry(main)
@@ -2716,7 +2758,7 @@ def signw(sign_name, submit):
         tkinter.messagebox.showerror('Invalid Sign Name', 'You cannot enter a blank string as a sign name')
     else:
         if boolinline[1]:
-            insetlinewrite('\n:' + sign_name.get(), boolinline[0], 'sign: ' + sign_name)
+            insetlinewrite(':' + sign_name.get(), boolinline[0], 'sign: ' + sign_name)
 
         else:
             with open('outputs\\' + filename, 'a')as sign:
@@ -2890,6 +2932,7 @@ def _set_title(title, forget):
 
 def set_title():
     title = Entry(main)
+    title.insert(END, 'Enter the title of your file')
     title.grid(row=35, column=30)
     submit = Button(main, text='Submit', command=lambda:_set_title(title, submit))
     submit.grid(row=36, column=30)
@@ -2933,17 +2976,19 @@ def clear_all():
     else:
         tkinter.messagebox.showinfo('Clear Aborted', 'Your file will not be cleared.')
 
-
 def runtipent(a):
     start.configure(text='Runs a file')
+
 def runtiple(a):
     start.configure(text='Run')
+
 try:
     main.iconbitmap('batchmain_icon.ico')
 except:
     tkinter.messagebox.showwarning('File Not Found', 'Batchmain cannot find the icon file. Make sure that batchmain_icon.ico is in the same directory as batchmain.exe.')
+
 gate_state = gates()
-main.title('WAMS')
+main.title('WAMS Batch Writer')
 command = Label(main, text='Command Log', font='System 17')
 pause = Button(main, text='pause', command=lambda: batchwriter('pause'), fg='light green', bg='black')
 pause.grid(row=2, column=1)
@@ -3048,6 +3093,8 @@ pause.bind('<Leave>', pausetipleave)
 #Menu
 filemen = Menu(mainmen)
 mainmen.add_cascade(menu=filemen, label='File')
+menu_setup = CustomPackage()
+menu_setup.menu_setup()
 package_class = CustomPackage()
 filemen.add_command(label='Run File', command=runyourfile)
 filemen.add_command(label='Title', command=set_title)

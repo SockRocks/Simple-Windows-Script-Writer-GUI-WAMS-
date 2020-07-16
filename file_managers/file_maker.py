@@ -109,19 +109,25 @@ class file_maker:
 
 
 def openfil():
-    prefile = tkinter.filedialog.askdirectory(title='Open a Project', initialdir='projects')
-    if 'projects' not in prefile:
-        error_dist('invalid_path', 'projects')
+    file = tkinter.filedialog.askopenfilename(title='Open a File', initialdir='projects', filetypes=([('Batch File', '*.bat')]))
+    nfile = file.replace('/', '\\')
+    file_name = os.path.basename(nfile)
+    project_name = nfile.split('\\')
+    generic = 'projects\\' + project_name[5]
 
+
+    if 'outputs' in nfile:
+        for x in os.listdir(generic + '\\filehelper'):
+            os.remove(generic + '\\filehelper\\' + x)
+
+        with open( generic + '\\filehelper\\' + file_name[:-4] + '.txt', 'w')as op:
+            op.write(file_name)
+            op.close()
+
+        os.system('cd {0} & start batchmain_runner.vbs'.format(generic))
+            
     else:
-        error = False
-        try:
-            os.system('start {0}\\batchmain_runner.vbs'.format(prefile))
-        except FileNotFoundError:
-            error_dist('file_not_found', 'batchmain_runner.vbs')
-            error = True
-        if not error:
-            sys.exit()
+        tkinter.messagebox.showerror('Invalid Path', 'You cannot select a file outside of the projects folder.')
 
 
 def filedelete():
