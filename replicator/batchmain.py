@@ -3,13 +3,17 @@ from tkinter import *
 import tkinter.messagebox
 import tkinter.filedialog
 import command_insert
+from tkinter import ttk
+from ttkthemes import themed_tk as tk
 
 
 testV = 'copy'
 filerunning = False
 ###     setup         ###
 
-main = Tk()
+main = tk.ThemedTk()
+main.get_themes()
+main.set_theme('plastik')
 nocom = False
 
 packa = True
@@ -104,6 +108,8 @@ commandlog = Listbox(main, width=60, height=40)
 
 varlog = Listbox(main, width=15, height=10)
 varlog.grid(row=1, column=36)
+varlog.insert(END, 'globuser = the current logged in user')
+varlog.insert(END, 'globrand = a random number between 0 and 32,767')
 try:
     main.iconbitmap('batchmain_icon.ico')
 except:
@@ -358,10 +364,7 @@ class gates:
                 tkinter.messagebox.showerror('Invalid Input', 'You cannot mix keys and strings in gates')
             else:
 
-                if not v_c[1]:
-                    second_item = '\"' + second_item + '\"'
-                else:
-                    second_item = v_c[0]
+                second_item = v_c[0]
                 items = (first_item, second_item)
                 with open('resources\\in_if', 'r')as get_num:
                     nest = int(get_num.readline().strip('\n'))
@@ -396,9 +399,8 @@ class gates:
                         gate.write('\nif ' + items[0] + self.compare + items[1] + ' (')
                         gate.close()
 
-
                     with open('commandlog\\' + _filename2 + 'log.txt', 'a')as if_com:
-
+                        if_com.write('\n')
                         if_com.write('\nGate: Pass if ' + items[0] + comm_trans + items[1])
                         if_com.close()
 
@@ -784,7 +786,18 @@ class variablemake:
         if '-' in a:
             for fil in os.listdir('resources\\variables'):
                 if fil in a:
-                    newt = a.replace('-' + fil, '%' + fil + '%')
+                    if 'globrand' == a.strip('-'):
+                        var = 'RANDOM'
+                        newt = a.replace('-globrand', '%' + 'RANDOM' + '%')
+
+                    elif 'globuser' == a.strip('-'):
+                        var = 'USERNAME'
+                        newt = a.replace('-globuser', '%' + 'USERNAME' + '%')
+
+                    else:
+                        var = fil
+                        newt = a.replace('-' + var, '%' + var + '%')
+
                     fint = '\necho ' + newt
                     return fint, True
         return 'null', False
@@ -822,7 +835,15 @@ class variablemake:
         if '-' in string:
             for fil in os.listdir('resources\\variables'):
                 if fil in string:
-                    newt = string.replace('-' + fil, '%' + fil + '%')
+                    if 'globrand' == a.strip('-'):
+                        var = 'RANDOM'
+                        newt = a.replace('-globrand', '%' + 'RANDOM' + '%')
+
+                    elif 'globuser' == a.strip('-'):
+                        var = 'USERNAME'
+                        newt = a.replace('-globuser', '%' + 'USERNAME' + '%')
+                    else:
+                        newt = string.replace('-' + fil, '%' + fil + '%')
                     return newt, True
 
         return 'null', False
@@ -928,6 +949,7 @@ class start_file:
 
     def link_start(self, _link, forget):
         forget.grid_forget()
+        _link.grid_forget()
 
         link = _link.get()
         boolinline = self.insert.boolinline()
@@ -2479,8 +2501,9 @@ def file_grab(link, forget, forget1):
     else:
         _link = Entry(main)
         _link.insert(END, 'Enter the link of the website you want to open')
-        submit = Button(main, text='Submit', command=lambda:file_object(_link, submit))
-        submit.grid(row=35, column=30)
+        _link.grid(row=35, column=30)
+        submit = Button(main, text='Submit', command=lambda:file_object.link_start(_link, submit))
+        submit.grid(row=36, column=30)
 
 
 
@@ -2968,11 +2991,15 @@ def clear_all():
             locl.close()
         vari_c = 0
         for x in os.listdir('resources\\variables'):
-            vari_c += 1
-            os.remove('resources\\variables\\' + x)
+            if x != 'globrand' and x != 'globuser':
+                print(x)
+                vari_c += 1
+                os.remove('resources\\variables\\' + x)
         for x in range(vari_c):
             varlog.delete(0)
-        os.remove('commandlog\\' + filename[:-4] + '-v')
+
+        if os.path.exists('commandlog\\' + filename[:-4] + '-v'):
+            os.remove('commandlog\\' + filename[:-4] + '-v')
     else:
         tkinter.messagebox.showinfo('Clear Aborted', 'Your file will not be cleared.')
 
