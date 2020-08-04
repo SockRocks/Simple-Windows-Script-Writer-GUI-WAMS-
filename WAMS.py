@@ -85,7 +85,7 @@ except:
     error_dist('icon_error', None)
 
 
-title = Label(main, text='WAMS\n 5.3.3.3', font='Arial 20 bold', fg='lightgreen', bg='darkgreen')
+title = Label(main, text='WAMS\n 5.3.7.3', font='Arial 20 bold', fg='lightgreen', bg='darkgreen')
 title.bind('<Enter>', effect.title_e)
 title.bind('<Leave>', effect.title_e2)
 title.pack(side=TOP)
