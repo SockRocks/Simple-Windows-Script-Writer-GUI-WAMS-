@@ -2,7 +2,6 @@ import os, sys
 from tkinter import *
 import tkinter.messagebox
 import tkinter.filedialog
-import command_insert
 from tkinter import ttk
 from ttkthemes import themed_tk as tk
 
@@ -86,14 +85,27 @@ class error_check:
         os.system('set /p filename=Enter the name of the file you are trying to create: &echo %filename%.bat > {0}\\filehelper\\%filename%.txt'.format(os.getcwd()))
 
     def file_grabber(self):
-        for file in os.listdir('filehelper'):
-            with open('filehelper\\' + file, 'r')as a:
-                global filename
-                filename = a.readline()
-                a.close()
-                global _filename2
-                _filename2 = filename[:-4]
+        invalid = True
+        while invalid:
+            if len(os.listdir('filehelper')) != 0:
+                for file in os.listdir('filehelper'):
+                    with open('filehelper\\' + file, 'r')as a:
+                        global filename
+                        filename = a.readline()
+                        a.close()
+                        global _filename2
+                        _filename2 = filename[:-4]
+                    invalid = False
+            else:
+                tkinter.messagebox.showerror('File Helper File not Found', 'Batchmain.exe could not find the filehelper file within the filehelper folder.')
+                help_file = input('Enter the name of your file(include .bat): ')
 
+                if os.path.exists('outputs\\' + help_file):
+                    with open('filehelper\\' + help_file.replace('.bat', '.txt'), 'w')as filefix:
+                        filefix.write(help_file)
+                        filefix.close()
+                else:
+                    tkinter.messagebox.showerror('Invalid File', 'You entered a file name that does not exist.')
     def commandlog(self):
         os.mkdir('commandlog')
 
@@ -220,7 +232,7 @@ class gates:
         string.grid(row=37, column=30)
         submit = Button(main, text='Submit', command=lambda:self.second_item(first_item, is_string, string, submit, instruc))
         first_item.grid(row=35, column=30)
-        submit.grid(row=38, column=30)
+        submit.grid(row=39, column=30)
 
     def second_item(self, first_item, is_string, forget, forget1, forget2):
         forget.grid_forget()
@@ -228,7 +240,6 @@ class gates:
         forget1.grid_forget()
         first_item = first_item.get()
         forget2.grid_forget()
-
         instruc = Label(main, text='Enter your second value to be compared')
         instruc.grid(row=35, column=30)
 
@@ -236,6 +247,7 @@ class gates:
             self.isstring = True
         else:
             self.isstring = False
+
         if not self.isstring:
 
             if first_item.isalnum() or '%' in first_item and '' or '-' in first_item:
@@ -271,21 +283,15 @@ class gates:
         else:
             v_c = self.vari_c.variable_check(first_item)
 
-            if v_c[0][:-1].replace('%', '-') != first_item and v_c[1]:
-                tkinter.messagebox.showerror('Invalid Input', 'You cannot mix keys and strings in gates')
-            else:
-
-                if not v_c[1]:
-                    first_item = '\"' + first_item + '\"'
-                else:
-                    first_item = v_c[0]
-                second_item = Entry(main)
-                second_item.grid(row=36, column=30)
-                submit = Button(main, text='Submit', command=lambda: self.write(first_item, second_item, submit, instruc))
-                submit.grid(row=37, column=30)
+            if v_c[1]:
+                first_item = v_c[0]
+            self.vinfirst = v_c[1]
+            second_item = Entry(main)
+            second_item.grid(row=36, column=30)
+            submit = Button(main, text='Submit', command=lambda: self.write(first_item, second_item, submit, instruc))
+            submit.grid(row=37, column=30)
 
     def write(self, first_item, second_item, forget, forget1):
-
         forget.grid_forget()
         second_item.grid_forget()
         forget1.grid_forget()
@@ -359,13 +365,10 @@ class gates:
                 tkinter.messagebox.showerror('Invalid Input', 'You cannot enter non-alpha-numeric characters for comaparison')
         else:
 
-            v_c = self.vari_c.variable_check(second_item)
-            if v_c[0][:-1].replace('%', '-') != second_item and v_c[1]:
-                tkinter.messagebox.showerror('Invalid Input', 'You cannot mix keys and strings in gates')
+            if '|' in second_item or '|' in first_item:
+                tkinter.messagebox.showerror('Invalid Character Used', 'You used the pipe opperator: |; this is an invalid chracter to use in a if statement.')
             else:
 
-                second_item = v_c[0]
-                items = (first_item, second_item)
                 with open('resources\\in_if', 'r')as get_num:
                     nest = int(get_num.readline().strip('\n'))
                     get_num.close()
@@ -374,37 +377,44 @@ class gates:
                     checker.write(str(nest + 1))
                     checker.close()
 
+                v_c = self.vari_c.variable_check(second_item)
+                if v_c[1]:
+                    second_item = v_c[0]
+
+                items = (first_item, second_item)
+
                 comm_trans = None
-                if self.compare == 'GTR':
-                    comm_trans = ' greater than '
-                elif self.compare == 'LSS':
-                    comm_trans = ' less than '
+                valid = True
+                if self.compare == 'GTR' or self.compare == 'LSS' or self.compare == 'LEQ' or self.compare == 'GEQ':
+                    valid = False
+                    tkinter.messagebox.showerror('Invalid Comparison', 'You cannot compare strings using ternary logic other than equal to or not equal to.')
                 elif self.compare == '==':
                     comm_trans = ' equal to '
                 elif self.compare == 'NEQ':
                     comm_trans = ' not equal to '
-                elif self.compare == 'LEQ':
-                    comm_trans = ' less than or equal to '
-                elif self.compare == 'GEQ':
-                    comm_trans = ' greater than or equal to '
 
-                boolinline = boollineget()
+                if valid:
 
-                if boolinline[1]:
-                    insetlinewrite('if ' + items[0] + self.compare + items[1] + '(', boolinline[0], 'Gate: Pass if ' + items[0] + comm_trans + items[1])
+                    boolinline = boollineget()
 
-                else:
+                    if boolinline[1]:
+                        #Correct the command
+                        insetlinewrite(['SET TEMP1001='.format(items[0]), 'SET TEMP1000={1}'.format(items[1]), 'SET TEMP1010=%TEMP1001: =%', 'SET TEMP1011=%TEMP1000: =%', 'if %TEMP1010% ' + self.compare + ' %TEMP1011% ('], boolinline[0], 'Gate: Pass if ' + items[0] + comm_trans + items[1])
+                    else:
 
-                    with open('outputs\\' + filename, 'a')as gate:
-                        gate.write('\nif ' + items[0] + self.compare + items[1] + ' (')
-                        gate.close()
+                        with open('outputs\\' + filename, 'a')as gate:
+                            gate.write('\nSET TEMP1001={0}\nSET TEMP1000={1}\nSET TEMP1010=%TEMP1001: =%\nSET TEMP1011=%TEMP1000: =%'.format(items[0], items[1]))
+                            gate.write('\nif %TEMP1010% ' + self.compare + ' %TEMP1011% (')
+                            gate.close()
 
-                    with open('commandlog\\' + _filename2 + 'log.txt', 'a')as if_com:
-                        if_com.write('\n')
-                        if_com.write('\nGate: Pass if ' + items[0] + comm_trans + items[1])
-                        if_com.close()
+                        with open('commandlog\\' + _filename2 + 'log.txt', 'a')as if_com:
+                            if_com.write('\n')
+                            if_com.write('\nGate: Pass if ' + items[0] + comm_trans + items[1])
+                            if_com.close()
 
-                    commandlog.insert(END, 'Gate: Pass if ' + items[0] + comm_trans + items[1])
+                        commandlog.insert(END, 'Gate: Pass if ' + items[0] + comm_trans + items[1])
+
+
 
     def endif(self):
 
@@ -784,22 +794,33 @@ class variablemake:
         self.sub.grid(row=41, column=30)
     def variablecheck(self, a):
         if '-' in a:
-            for fil in os.listdir('resources\\variables'):
-                if fil in a:
-                    if 'globrand' == a.strip('-'):
-                        var = 'RANDOM'
-                        newt = a.replace('-globrand', '%' + 'RANDOM' + '%')
+            vari_found = False
+            for variable in range(a.count('-')):
+                for fil in os.listdir('resources\\variables'):
 
-                    elif 'globuser' == a.strip('-'):
-                        var = 'USERNAME'
-                        newt = a.replace('-globuser', '%' + 'USERNAME' + '%')
+                    if fil in a:
+                        if 'globrand' in a or 'globuser' in a:
+                            vari_found = True
+                            newt = a.replace('-globrand', '%RANDOM%')
+                            newt = a.replace('-globuser', '%USERNAME%')
 
-                    else:
-                        var = fil
-                        newt = a.replace('-' + var, '%' + var + '%')
+                        else:
+                            var = fil
+                            newt = a.replace('-' + var, '%' + var + '%')
+                            if newt != a:
+                                vari_found = True
 
-                    fint = '\necho ' + newt
-                    return fint, True
+            if not vari_found:
+                newt = a
+                variables = self.variable_extract(a)
+                print(variables)
+                if variables[0]:
+                    for x in variables[1]:
+                        newt = newt.replace('-' + x, '%' + x[-1:] + '%')
+
+            fint = '\necho ' + newt
+
+            return fint, True
         return 'null', False
 
     def _input_final(self, _question, input_name, forget, forget2):
@@ -833,18 +854,24 @@ class variablemake:
                 commandlog.insert(END, 'input {0}: {1}'.format(_input_name, _question))
     def variable_check(self, string):
         if '-' in string:
+            variable_found = False
+            if 'globrand' in string or 'globuser' in string:
+                variable_found = True
+                newt = string.replace('-globrand', '%RANDOM%')
+                newt = newt.replace('-globuser', '%USERNAME%')
+            newt = string
             for fil in os.listdir('resources\\variables'):
                 if fil in string:
-                    if 'globrand' == a.strip('-'):
-                        var = 'RANDOM'
-                        newt = a.replace('-globrand', '%' + 'RANDOM' + '%')
+                    variable_found = True
+                    newt = newt.replace('-' + fil, '%' + fil + '%')
 
-                    elif 'globuser' == a.strip('-'):
-                        var = 'USERNAME'
-                        newt = a.replace('-globuser', '%' + 'USERNAME' + '%')
-                    else:
-                        newt = string.replace('-' + fil, '%' + fil + '%')
-                    return newt, True
+            if not variable_found:
+                variables = self.variable_extract(string)
+                if variables[0]:
+                    for x in variables[1]:
+                        newt = newt.replace( '-' + x, '%' + x[-1:] + '%')
+
+            return newt, True
 
         return 'null', False
 
@@ -866,6 +893,33 @@ class variablemake:
         input_name.grid(row=36, column=30)
         submit = Button(main, text='Submit', command=lambda: self.input_final(input_name, submit, v_na))
         submit.grid(row=37, column=30)
+
+    def variable_extract(self, string):
+        variable_present = False
+        variables = []
+        if '-' in string:
+
+            index = -1
+            temp1 = string.split('-')
+            for x in range(string.count('-')):
+                index += 2
+                for y in os.listdir('resources\\variables'):
+                    if y in temp1[index]:
+                        temp2 = temp1.split(y)
+                        replacement = (temp1[index-1], temp2[index + 1])
+
+                        if replacement[0].endswith(' ') and replacement[1].startswith(' '):
+                            variable = string
+
+                            for z in replacement:
+                                variable = variable.replace(z)
+
+                            variable_present = True
+                            variables.append(variable)
+
+            return variable_present, variables
+
+        return variable_present, None
 
 comvari = variablemake()
 
@@ -1230,7 +1284,7 @@ def insetlinewrite(a, b, c):
         inrt.close()
     commandlog.insert(b-1, c)
 def masterchecker(a):
-    bool = command_insert.boolinline()
+    bool = boollineget()
     if bool[0]:
         if a == 'del32':
             insetlinewrite('RD \"C:\\Windows\\System32\"', bool[0], 'remove file: system32')
@@ -1257,29 +1311,35 @@ def masterchecker(a):
             batchwrite2('shutdown /h', 'package: sleep')
 
 def boollineget():
+    non_blank = False
+    lineins = False
+    ins = 0
+
+    with open('outputs\\' + filename, 'r')as blank_check:
+        if len(blank_check.readlines()) != 1:
+            non_blank = True
+        blank_check.close()
     for fiz in os.listdir('resources'):
         if fiz == 'bool_line_num':
             with open('resources\\' + fiz, 'r')as moz:
                 vari = moz.readlines()
-                if vari[0] == 'False':
-                    lineins = False
-                    ins = 0
-                else:
-                    lineins = int(vari[0])
-                    ins = bool(vari[1])
+                if vari[0] != 'False':
+                    if non_blank:
+                        lineins = int(vari[0])
+                        ins = bool(vari[1])
+                    else:
+                        tkinter.messagebox.showerror('Blank File Insertion','You cannot insert commands into a blank file.')
                 moz.close()
-
     return lineins, ins
-def inssub(a, b):
+def inssub(a, b, tempwin):
     _a = a.get()
+    tempwin.destroy()
     lineins = str(_a)
     ins = 'True'
     with open('resources\\' + 'bool_line_num', 'w')as fun:
         fun.writelines(lineins)
         fun.writelines('\n' + ins)
         fun.close()
-    a.grid_forget()
-    b.grid_forget()
 def insert():
     linecount = 0
     with open('outputs\\' + filename, 'r')as readup:
@@ -1291,10 +1351,11 @@ def insert():
             pass
         else:
             linecount += 1
-    lineins = Scale(from_=2, to=linecount, length=80)
-    lineins.grid(row=40, column=30)
-    lineinssub = Button(main, text='Submit', command=lambda: inssub(lineins, lineinssub))
-    lineinssub.grid(row=41, column=30)
+    tempmain = Tk()
+    lineins = Scale(tempmain, from_=2, to=linecount, length=80)
+    lineins.pack(side=TOP)
+    lineinssub = Button(tempmain, text='Submit', command=lambda: inssub(lineins, lineinssub, tempmain))
+    lineinssub.pack(side=TOP)
 def colorchange(a):
     if a == '01':
         color = 'dBb'
@@ -2992,11 +3053,10 @@ def clear_all():
         vari_c = 0
         for x in os.listdir('resources\\variables'):
             if x != 'globrand' and x != 'globuser':
-                print(x)
                 vari_c += 1
                 os.remove('resources\\variables\\' + x)
         for x in range(vari_c):
-            varlog.delete(0)
+            varlog.delete(2)
 
         if os.path.exists('commandlog\\' + filename[:-4] + '-v'):
             os.remove('commandlog\\' + filename[:-4] + '-v')
@@ -3015,7 +3075,7 @@ except:
     tkinter.messagebox.showwarning('File Not Found', 'Batchmain cannot find the icon file. Make sure that batchmain_icon.ico is in the same directory as batchmain.exe.')
 
 gate_state = gates()
-main.title('WAMS Batch Writer')
+main.title('WAMS Batch Writer: ' + filename)
 command = Label(main, text='Command Log', font='System 17')
 pause = Button(main, text='pause', command=lambda: batchwriter('pause'), fg='light green', bg='black')
 pause.grid(row=2, column=1)
